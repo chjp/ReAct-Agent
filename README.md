@@ -1,6 +1,6 @@
 # ReAct Agent
 
-A ReAct (Reasoning + Acting) agent implementation in Python that uses OpenRouter API to interact with language models. The agent follows a structured thinking and action loop to solve problems by breaking them down into steps.
+A ReAct (Reasoning + Acting) agent implementation in Python. Instead of calling an API directly, the agent prints the exact JSON payload for each model request. Copy this payload into your preferred web-based LLM, then paste the model's response back into the agent to continue the reasoning loop.
 
 ## Setup Instructions
 
@@ -8,13 +8,7 @@ First, make sure you have installed `uv`. If not, please install it following th
 
 https://docs.astral.sh/uv/guides/install-python/
 
-Then, create a file called `.env` in the current directory with the following content:
-
-```
-OPENROUTER_API_KEY=xxx
-```
-
-Replace `xxx` with your actual API Key from OpenRouter. If you don't use OpenRouter, you can modify the code and change the `base_url` to another provider.
+No API keys are required; the agent works entirely through manual copy‑and‑paste.
 
 ## Running the Agent
 
@@ -30,11 +24,7 @@ uv run agent.py <project_directory>
 uv run agent.py snake
 ```
 
-This will create a `snake` directory and start the agent. You can then enter tasks like:
-
-```
-Please write a snake game using HTML, JS, and CSS, with code in separate files
-```
+This will create a `snake` directory and start the agent. When prompted with a JSON request, copy it into a web-based LLM, paste the model's reply back into the terminal, and continue until you reach a final answer.
 
 ## Features
 
@@ -42,7 +32,7 @@ Please write a snake game using HTML, JS, and CSS, with code in separate files
 - **Tool Integration**: Built-in tools for file operations and terminal commands
 - **Project Directory**: Automatically creates and manages project directories
 - **Session Logging**: Logs all interactions with timestamps to `.agentrun.log` files
-- **Multiple Model Support**: Works with various models through OpenRouter API
+- **Manual Model Interaction**: Works with any web-based LLM via copy‑and‑paste
 
 ## Available Tools
 
