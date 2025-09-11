@@ -9,6 +9,7 @@ from datetime import datetime
 
 import click
 import platform
+import pyperclip
 
 from prompt_template import react_system_prompt_template
 
@@ -121,10 +122,17 @@ class ReActAgent:
             "messages": messages
         }
 
+        request_json = json.dumps(request_payload, indent=2, ensure_ascii=False)
+
         log_and_print(f"\n" + "="*80, self.log_file)
         log_and_print(f"📋 EXACT JSON REQUEST (copy-paste to a web LLM)", self.log_file)
         log_and_print(f"="*80, self.log_file)
-        log_and_print(json.dumps(request_payload, indent=2, ensure_ascii=False), self.log_file)
+        log_and_print(request_json, self.log_file)
+        try:
+            pyperclip.copy(request_json)
+            log_and_print("Prompt copied to clipboard.", self.log_file)
+        except pyperclip.PyperclipException as e:
+            log_and_print(f"Failed to copy prompt to clipboard: {e}", self.log_file)
         log_and_print(f"="*80 + "\n", self.log_file)
 
         log_and_print("Please paste the model's response. End with a line containing only END.", self.log_file)
