@@ -8,8 +8,6 @@ import json
 from datetime import datetime
 
 import click
-from dotenv import load_dotenv
-from openai import OpenAI
 import platform
 
 from prompt_template import react_system_prompt_template
@@ -36,11 +34,6 @@ class ReActAgent:
         log_dir = os.path.join(base_dir, "agentlog")
         os.makedirs(log_dir, exist_ok=True)
         self.log_file = os.path.join(log_dir, f"{timestamp}.agentrun.log")
-        
-        self.client = OpenAI(
-            base_url="https://openrouter.ai/api/v1",
-            api_key=ReActAgent.get_api_key(),
-        ) # use LiteLLM as alternative
 
     def run(self, user_input: str):
         messages = [
@@ -119,39 +112,27 @@ class ReActAgent:
             file_list=file_list
         )
 
-    @staticmethod
-    def get_api_key() -> str:
-        """Load the API key from an environment variable."""
-        load_dotenv()
-        api_key = os.getenv("OPENROUTER_API_KEY")
-        if not api_key:
-            raise ValueError("OPENROUTER_API_KEY environment variable not found. Please set it in .env file.")
-        return api_key
-
     def call_model(self, messages):
-        log_and_print("\n\nRequesting model, please wait...", self.log_file)
-        
-        # Log the exact JSON payload sent to OpenRouter API
+        log_and_print("\n\nRequesting model (manual step)...", self.log_file)
+
+        # Log the exact JSON payload for manual copy/paste
         request_payload = {
             "model": self.model,
             "messages": messages
         }
-        
-        log_and_print(f"\n" + "="*80, self.log_file)
-        log_and_print(f"📋 EXACT JSON REQUEST (copy-paste to GPT-O or API testing)", self.log_file)
-        log_and_print(f"="*80, self.log_file)
+
+        log_and_print("\n" + "="*80, self.log_file)
+        log_and_print("📋 EXACT JSON REQUEST (copy/paste into web LLM)", self.log_file)
+        log_and_print("="*80, self.log_file)
         log_and_print(json.dumps(request_payload, indent=2, ensure_ascii=False), self.log_file)
-        log_and_print(f"="*80 + "\n", self.log_file)
-        
-        response = self.client.chat.completions.create(
-            model=self.model,
-            messages=messages,
-        )
-        content = response.choices[0].message.content
-        
+        log_and_print("="*80 + "\n", self.log_file)
+
+        log_and_print("Paste the model's response below.", self.log_file)
+        content = input("Model response: ")
+
         # Log the response from model
         log_and_print(f"\n📥 MODEL RESPONSE:\n{content}", self.log_file)
-        
+
         messages.append({"role": "assistant", "content": content})
         return content
 
