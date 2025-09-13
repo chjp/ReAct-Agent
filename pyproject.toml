@@ -9,6 +9,7 @@ dependencies = [
     "openai>=1.91.0",
     "python-dotenv>=1.1.1",
     "requests>=2.31.0",
+    "duckduckgo-search>=6.3.0",
 ]
 
 [tool.uv.workspace]
