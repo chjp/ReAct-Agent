@@ -1,3 +1,25 @@
+## Secrets and environment
 .env
-__pycache__/prompt_template.cpython-312.pyc
+
+## Python caches
+__pycache__/
+*.py[cod]
+*.pyo
+
+## Virtual environments
+.venv/
+venv/
+
+## Logs and runtime artifacts
+agentlog/
+*.agentrun.log
+*.log
+
+## OS/editor junk
+.DS_Store
+.idea/
+.vscode/
+
+## Temp directories
+tmp/
 /tmp
