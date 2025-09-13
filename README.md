@@ -27,10 +27,10 @@ uv run agent.py <project_directory>
 ### Example Usage
 
 ```bash
-uv run agent.py snake
+uv run agent.py snakegame
 ```
 
-This will create a `snake` directory and start the agent. You can then enter tasks like:
+This will create a `snakegame` directory and start the agent. You can then enter tasks like:
 
 ```
 Please write a snake game using HTML, JS, and CSS, with code in separate files
