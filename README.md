@@ -51,3 +51,11 @@ Please write a snake game using HTML, JS, and CSS, with code in separate files
 - `run_terminal_command(command)` - Execute shell commands
 
 All file operations use relative paths within the specified project directory.
+
+## References
+
+- ReAct: Synergizing Reasoning and Acting in Language Models — Yao et al., 2022. [arXiv:2210.03629](https://arxiv.org/abs/2210.03629)
+
+## License
+
+This project is licensed under the MIT License. See the `LICENSE` file for details.
