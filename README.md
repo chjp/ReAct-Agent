@@ -36,6 +36,20 @@ This will create a `snakegame` directory and start the agent. You can then enter
 Please write a snake game using HTML, JS, and CSS, with code in separate files
 ```
 
+### Quick Demo: BWA install
+
+Run the agent in a new project directory `bwainstall`:
+
+```bash
+uv run agent.py bwainstall
+```
+
+When prompted, paste this task:
+
+```
+Please search official document of short read alignment tool bwa and install the latest version
+```
+
 ## Features
 
 - **ReAct Pattern**: Follows the Reasoning + Acting pattern with structured thinking
@@ -49,6 +63,8 @@ Please write a snake game using HTML, JS, and CSS, with code in separate files
 - `read_file(file_path)` - Read file contents
 - `write_to_file(file_path, content)` - Write content to files
 - `run_terminal_command(command)` - Execute shell commands
+- `web_search(query, max_results=5, site=None)` - Search the web (DuckDuckGo). Optionally scope to a specific site.
+- `fetch_url(url, timeout=20)` - Fetch a URL and return status, content type, and a truncated text preview.
 
 All file operations use relative paths within the specified project directory.
 
