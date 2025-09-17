@@ -14,6 +14,8 @@ import platform
 import requests
 from duckduckgo_search import DDGS
 
+from mcp import tools as mcp_tools
+
 from prompt_template import react_system_prompt_template
 
 
@@ -326,8 +328,12 @@ def create_project_tools(project_dir):
             }, ensure_ascii=False, indent=2)
         except Exception as e:
             return f"Fetch error: {e}"
+
+    def host_info() -> str:
+        """Return host information via the MCP tool implementation."""
+        return mcp_tools.get_host_info()
     
-    return [read_file, write_to_file, run_terminal_command, web_search, fetch_url]
+    return [read_file, write_to_file, run_terminal_command, web_search, fetch_url, host_info]
 
 @click.command()
 @click.argument('project_directory',

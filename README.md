@@ -65,8 +65,21 @@ Please search official document of short read alignment tool bwa and install the
 - `run_terminal_command(command)` - Execute shell commands
 - `web_search(query, max_results=5, site=None)` - Search the web (DuckDuckGo). Optionally scope to a specific site.
 - `fetch_url(url, timeout=20)` - Fetch a URL and return status, content type, and a truncated text preview.
+- `host_info()` - Return JSON host metadata via the MCP tool implementation.
 
 All file operations use relative paths within the specified project directory.
+
+## Minimal MCP Server
+
+The project now ships with a minimal [Model Context Protocol](https://github.com/modelcontextprotocol) (MCP) server that exposes the same host information tool used by the agent. The server lives in `mcp/main.py` and registers the `get_host_info` function from `mcp/tools.py`.
+
+### Running the MCP Server
+
+```bash
+uv run -m mcp.main
+```
+
+This starts the MCP server over stdio (the default for `FastMCP`). You can point compatible MCP clients at the running process to retrieve host metadata, or reuse the exported `host_info()` tool inside the agent when you run `agent.py` as described above.
 
 ## References
 
