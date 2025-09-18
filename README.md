@@ -24,6 +24,20 @@ After ensuring `uv` is installed successfully, navigate to the current directory
 uv run agent.py <project_directory>
 ```
 
+### Manual mode
+
+If you prefer to run the model call manually (for example, by pasting the request
+payload into a browser-based LLM), start the agent with the `--manual` flag:
+
+```bash
+uv run agent.py --manual <project_directory>
+```
+
+For each step, the agent copies the exact JSON payload for the model request to
+your clipboard. Paste that payload into your chosen LLM, then copy the model's
+response and paste it back into the terminal, ending your input with a line that
+contains only `END`.
+
 ### Example Usage
 
 ```bash
