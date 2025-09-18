@@ -3,7 +3,7 @@ import inspect
 import os
 import re
 from string import Template
-from typing import List, Callable, Tuple
+from typing import List, Callable, Tuple, Optional
 import json
 from datetime import datetime
 
@@ -11,6 +11,8 @@ import click
 from dotenv import load_dotenv
 from openai import OpenAI
 import platform
+import pyperclip
+from pyperclip import PyperclipException
 
 from tools import create_project_tools
 
@@ -27,22 +29,31 @@ def log_and_print(message, log_file=None):
 
 
 class ReActAgent:
-    def __init__(self, tools: List[Callable], model: str, project_directory: str):
+    def __init__(
+        self,
+        tools: List[Callable],
+        model: str,
+        project_directory: str,
+        manual_mode: bool = False,
+    ):
         self.tools = { func.__name__: func for func in tools }
         self.model = model
         self.project_directory = project_directory
-        
+        self.manual_mode = manual_mode
+
         # Create log file with timestamp under agentlog/ directory next to this file
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         base_dir = os.path.dirname(os.path.abspath(__file__))
         log_dir = os.path.join(base_dir, "agentlog")
         os.makedirs(log_dir, exist_ok=True)
         self.log_file = os.path.join(log_dir, f"{timestamp}.agentrun.log")
-        
-        self.client = OpenAI(
-            base_url="https://openrouter.ai/api/v1",
-            api_key=ReActAgent.get_api_key(),
-        ) # use LiteLLM as alternative
+
+        self.client: Optional[OpenAI] = None
+        if not self.manual_mode:
+            self.client = OpenAI(
+                base_url="https://openrouter.ai/api/v1",
+                api_key=ReActAgent.get_api_key(),
+            ) # use LiteLLM as alternative
 
     def run(self, user_input: str):
         messages = [
@@ -130,27 +141,66 @@ class ReActAgent:
             raise ValueError("OPENROUTER_API_KEY environment variable not found. Please set it in .env file.")
         return api_key
 
+    def copy_payload_to_clipboard(self, payload_text: str) -> None:
+        """Copy payload text to clipboard, warn if not available."""
+        try:
+            pyperclip.copy(payload_text)
+            log_and_print("📎 JSON payload copied to clipboard.", self.log_file)
+        except PyperclipException as exc:
+            log_and_print("⚠️ Unable to copy payload to clipboard automatically.", self.log_file)
+            log_and_print(f"Reason: {exc}", self.log_file)
+            log_and_print("Please copy the payload manually from the log above.", self.log_file)
+
+    def collect_manual_response(self) -> str:
+        """Prompt the user to paste a manual model response."""
+        instructions = (
+            "Manual mode is enabled. Paste the model's response now.\n"
+            "When finished, enter a line containing only END and press Enter."
+        )
+        while True:
+            log_and_print(instructions, self.log_file)
+            lines = []
+            while True:
+                try:
+                    line = input()
+                except EOFError:
+                    raise RuntimeError("Unexpected EOF while reading manual response.")
+                if line.strip() == "END":
+                    break
+                lines.append(line)
+            content = "\n".join(lines).strip()
+            if content:
+                return content
+            log_and_print("Manual response was empty. Please try again.", self.log_file)
+
     def call_model(self, messages):
         log_and_print("\n\nRequesting model, please wait...", self.log_file)
-        
+
         # Log the exact JSON payload sent to OpenRouter API
         request_payload = {
             "model": self.model,
             "messages": messages
         }
-        
+
         log_and_print(f"\n" + "="*80, self.log_file)
         log_and_print(f"📋 EXACT JSON REQUEST (copy-paste to GPT-O or API testing)", self.log_file)
         log_and_print(f"="*80, self.log_file)
-        log_and_print(json.dumps(request_payload, indent=2, ensure_ascii=False), self.log_file)
+        payload_text = json.dumps(request_payload, indent=2, ensure_ascii=False)
+        log_and_print(payload_text, self.log_file)
         log_and_print(f"="*80 + "\n", self.log_file)
-        
-        response = self.client.chat.completions.create(
-            model=self.model,
-            messages=messages,
-        )
-        content = response.choices[0].message.content
-        
+
+        if self.manual_mode:
+            self.copy_payload_to_clipboard(payload_text)
+            content = self.collect_manual_response()
+        else:
+            if self.client is None:
+                raise RuntimeError("OpenAI client not initialized.")
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=messages,
+            )
+            content = response.choices[0].message.content
+
         # Log the response from model
         log_and_print(f"\n📥 MODEL RESPONSE:\n{content}", self.log_file)
         
@@ -233,11 +283,16 @@ class ReActAgent:
 
 
 @click.command()
+@click.option(
+    "--manual",
+    is_flag=True,
+    help="Copy requests to clipboard and paste model responses manually.",
+)
 @click.argument('project_directory',
                 type=click.Path(file_okay=False, dir_okay=True))
-def main(project_directory):
+def main(manual, project_directory):
     project_dir = os.path.abspath(project_directory)
-    
+
     # Create directory if it doesn't exist
     if not os.path.exists(project_dir):
         os.makedirs(project_dir)
@@ -245,7 +300,12 @@ def main(project_directory):
 
     tools = create_project_tools(project_dir)
     #agent = ReActAgent(tools=tools, model="meta-llama/llama-3.2-3b-instruct:free", project_directory=project_dir)
-    agent = ReActAgent(tools=tools, model="deepseek/deepseek-chat-v3.1", project_directory=project_dir)
+    agent = ReActAgent(
+        tools=tools,
+        model="deepseek/deepseek-chat-v3.1",
+        project_directory=project_dir,
+        manual_mode=manual,
+    )
 
     task = input("Please enter task: ")
 
